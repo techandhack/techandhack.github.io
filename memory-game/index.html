@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.1/css/all.css">
+</head>
+<style>
+    @import url("https://fonts.googleapis.com/css?family=Raleway&display=swap");
+
+    :root {
+        --white-color: #fff;
+        --text-color: #1e1c24;
+        --primary-color: #fc9e16;
+        --secondary-color: #e59042;
+        --tertiary-color: #f8d99c;
+    }
+
+    body {
+        margin: 0;
+        padding: 20px;
+        font-family: "Raleway", sans-serif;
+    }
+
+    .score-box {
+        color: var(--text-color);
+        font-size: 18px;
+        max-width: 500px;
+        text-align: center;
+        margin: 0 auto;
+    }
+
+    .score-box span {
+        margin-left: 10px;
+    }
+
+    .game-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, 120px);
+        grid-auto-rows: 120px;
+        justify-content: center;
+        gap: 15px;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .game-container .card {
+        width: 120px;
+        height: 120px;
+        background-color: var(--tertiary-color);
+        box-shadow: 4px 4px 0 0 var(--secondary-color);
+        font-size: 0;
+        color: var(--white-color);
+        border-radius: 5px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: 0.5s;
+    }
+
+    .game-container .card.selected {
+        background-color: var(--primary-color);
+        box-shadow: none;
+        font-size: 60px;
+        transition: 0.5s;
+        transform-style: preserve-3d;
+    }
+
+    .game-container .card.disabled {
+        pointer-events: none;
+    }
+
+    .game-container .card.match {
+        background-color: var(--white-color);
+        border: 2px solid var(--tertiary-color);
+        color: var(--tertiary-color);
+        pointer-events: none;
+    }
+</style>
+
+<body>
+
+    <div class="score-box">
+        <h3 id="score-title">Puntos:<span id="result">0</span></h3>
+    </div>
+
+    <div id="game-container" class="game-container"></div>
+
+
+</body>
+<script>
+    let emogisArray = [
+        "fa-smile",
+        "fa-grin-stars",
+        "fa-grin-tongue",
+        "fa-grin-beam",
+        "fa-frown",
+        "fa-grin-squint-tears",
+        "fa-angry",
+        "fa-dizzy",
+        "fa-grin-wink",
+        "fa-meh",
+        "fa-meh-blank",
+        "fa-sad-tear",
+    ];
+
+    let cardsChosen = [];
+    let cardsMatched = [];
+    const resultDisplay = document.querySelector("#result");
+
+    // Func para crear el grid completo
+    function createGrid() {
+        const container = document.getElementById("game-container");
+        let allEmogis = emogisArray
+            .concat(emogisArray)
+            .sort(() => 0.5 - Math.random());
+
+        allEmogis.forEach((item) => {
+            const card = document.createElement("div");
+            card.classList.add("card");
+            card.setAttribute("data-name", `${item}`);
+            card.addEventListener("click", displayCard);
+
+            const contentCard = document.createElement("i");
+            contentCard.classList.add("far", `${item}`);
+            card.append(contentCard);
+
+            container.appendChild(card);
+        });
+    }
+
+    // Func para mostrar una tarjeta
+    function displayCard() {
+        let cardSelected = this;
+        cardSelected.classList.add("selected", "disabled");
+        cardsChosen.push(cardSelected);
+
+        if (cardsChosen.length === 2) {
+            checkForMatch();
+        }
+    }
+
+    // Func para deshabilitar la posibilidad de hacer click
+    // cuando ya hay dos tarjetas seleccionadas
+    function disableCardsTemporaly() {
+        const noSelected = document.querySelectorAll(".card");
+        noSelected.forEach((card) => {
+            card.classList.add("disabled");
+        });
+    }
+
+    // Func para activar nuevamente la posibilidad de hacer click
+    function enableCards() {
+        const allCards = document.querySelectorAll(".card");
+        allCards.forEach((card) => {
+            card.classList.remove("disabled");
+        });
+    }
+
+    // Func para comprobar si hay coincidencia
+    function checkForMatch() {
+        disableCardsTemporaly();
+
+        if (cardsChosen[0].dataset.name === cardsChosen[1].dataset.name) {
+            cardsMatched.push(cardsChosen);
+
+            setTimeout(() => {
+                cardsChosen[0].classList.add("match");
+                cardsChosen[1].classList.add("match");
+
+                enableCards();
+
+                cardsChosen = [];
+
+                resultDisplay.textContent = cardsMatched.length;
+                if (cardsMatched.length === emogisArray.length) {
+                    document.getElementById("score-title").textContent =
+                        "¡Felicidades, has emparejado todas las tarjetas! 🎉";
+                }
+            }, 1000);
+        } else {
+            notMatched();
+        }
+    }
+
+    // Func a ejecutar cuando no hay coincidencia
+    function notMatched() {
+        disableCardsTemporaly();
+
+        setTimeout(() => {
+            cardsChosen[0].classList.remove("selected");
+            cardsChosen[1].classList.remove("selected");
+
+            enableCards();
+
+            cardsChosen = [];
+        }, 1500);
+    }
+
+    createGrid();
+
+</script>
+
+</html>
